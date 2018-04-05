@@ -16,7 +16,7 @@
 
 
 // Methods
-bool connectToWifi(const char* ssid, const char* password);
+IPAddress connectToWifi(const char* ssid, const char* password);
 
 
 #endif

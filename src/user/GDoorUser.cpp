@@ -13,8 +13,8 @@ GDoorUser::GDoorUser(){
 
 	// The constructure should set the instance vars - in future this will load from memory **
 	uid = "2XsXatJ4DgdltTMcIcrC146aUNZ2";
-	ssid = "FutureLab 2";
-	password = "CapeTownS001";
+	ssid = "FutureLab 2";  					// "Pez_is_awesome";     // 
+	password = "CapeTownS001"; 				// "50Million2021!"; // 
 
 	currentDoorState = DOOR_STATE_CLOSED; 
 }
