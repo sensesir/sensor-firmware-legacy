@@ -48,6 +48,19 @@ void sendUpdateForState(DoorState newState, const char* senderUID){
    httpReq.end();
 }
 
+/*
+ *                         Health check response
+ *
+ *  In standard operation, a nominally performing sensor will respond to 
+ *  periodic pings from the Firebase server (health checks). In these health 
+ *  checks, the chip should respond with 2 things: 1) The door status, 2) The 
+ *  timestamp of when it's connection to the internet was established (stored 
+ *  on the user object)
+ *   
+*/
+
+
+
 // Utility functions
 
 const char* createHttpJson(const char* stateStr, const char* uid){

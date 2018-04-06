@@ -15,6 +15,9 @@
 #include <ESP8266HTTPClient.h>
 #include "../constants/Constants.h"                    // ../constants/
 
+// Global constants
+// const char* remoteIPQuery = "checkip.dyndns.org";
+
 // Function declarations
 void sendUpdateForState(DoorState newState, const char* senderUID);
 

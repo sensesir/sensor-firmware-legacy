@@ -15,17 +15,15 @@
 #include "src/constants/Constants.h"
 #include "src/wifi-interface/WifiInterface.hpp"
 #include "src/user/GDoorUser.hpp"   
-#include "src/networking/HttpInterface.hpp"   
+#include "src/networking/HttpInterface.hpp"  
+#include "src/digital-io/GDoorIO.hpp"   
 // #include "src/networking/WebServer.hpp"        
 // --> Web Server class doesn't work, could be that strong reference isn't maintained to server object
 
 // Global vars
 GDoorUser user;
-ESP8266WebServer server(80);
-
-// GPIO Globals
-char doorSensorPinState = HIGH;
-int doorSensorPin = 2;
+GDoorIO doorIO;
+ESP8266WebServer server(6969);
 
 void setup() {
   delay(3000);
@@ -33,11 +31,11 @@ void setup() {
   Serial.println("Firing up Esp!!");
 
   // Set up GPIO pins
-  setupGPIOPins();
+  doorIO.setupGPIOPins();
 
   // Connect to wifi
   user.currentIPAddress = connectToWifi(user.ssid, user.password);        
-  
+
   // Set up the server
   serverSetup();
   
@@ -48,7 +46,6 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   // assessDoorState();
-  // httpServer.server.handleClient();
   server.handleClient();
 }
 
@@ -61,11 +58,7 @@ void loop() {
  * 
  */
 
-void setupGPIOPins(){
-  Serial.println("Setting GPIO Pins to correct IO state");
-  pinMode(doorSensorPin, INPUT);
-}
-
+/*  
 void assessDoorState() {
   // Only read the pin state if the previous value was high
   if (doorSensorPinState == HIGH){
@@ -93,6 +86,7 @@ void assessDoorState() {
     doorSensorPinState = digitalRead(doorSensorPin);
   }
 }
+*/
 
 /*
  *                  Server Setup & Handling
@@ -106,12 +100,10 @@ void assessDoorState() {
  */
 
 void serverSetup(){
-  // Set up the server, handler methods and start it running
-  char *actuateDoorEndpointStr = actuateDoorEndpoint();
 
   // Attach listeners for all the endpoints
   server.on("/", handleRoot);
-  server.on(actuateDoorEndpointStr, actuateDoor);
+  server.on(actuateDoorEndpoint(), actuateDoor);
   server.on(healthCheckEndpoint(), respondToHealthCheck);
   server.on(forceDoorStatusCheckEndpoint(), sendDoorStatus);
   server.on(forceHealthCheckEndpoint(), respondToForcedHealthCheck);
@@ -132,8 +124,11 @@ void handleRoot() {
 }
 
 void actuateDoor(){
-  Serial.println("SERVER: Recieved req to actuate the door. On it");
+  Serial.println("SERVER: Recieved req to actuate the door. On it.");
   server.send(200, "text/plain", "Hello, actuating door as per request.");
+
+  // Actuate door
+  doorIO.actuateDoor();
 }
 
 void respondToHealthCheck(){
@@ -153,6 +148,16 @@ void respondToForcedHealthCheck(){
   Serial.println("SERVER: Received http req to update health (forced check)");
   server.send(200, "text/plain", "1522963577");
 }
+
+
+
+
+
+
+
+
+
+
 
 /*
  *            * Utility methods *
@@ -212,8 +217,6 @@ char* forceDoorStatusCheckEndpoint(){
     }
   }
 
-
-
   Serial.print("SERVER: Registering endpoint = ");
   Serial.println(forceDoorStatusCheckStr);
   return forceDoorStatusCheckStr;
@@ -240,12 +243,15 @@ char* forceHealthCheckEndpoint(){
 
 /*      Testing Endpoints
  *  
- *  1. 10.0.1.41/2XsXatJ4DgdltTMcIcrC146aUNZ2/ActuateDoor
+ *  Remote test: {Remote IP}:6969/endpoint
+ *  1. 192.143.147.232:6969/2XsXatJ4DgdltTMcIcrC146aUNZ2/ActuateDoor
+ *  
+ *  1. 10.0.1.41/2XsXatJ4DgdltTMcIcrC146aUNZ2/ActuateDoor                 || 
  *  2. 10.0.1.41/2XsXatJ4DgdltTMcIcrC146aUNZ2/HealthCheck
  *  3. 10.0.1.41/2XsXatJ4DgdltTMcIcrC146aUNZ2/ForceDoorStatusCheck
  *  4. 10.0.1.41/2XsXatJ4DgdltTMcIcrC146aUNZ2/ForceHealthCheck
  *  
- *  Error: 10.0.1.41/XsXatJ4DgdltTMcIcrC146aUNZ2
+ *  Error: 10.0.1.41/XsXatJ4DgdltTMcIcrC146aUNZ2    http://hailmary.local
  *  
  */
 
