@@ -13,6 +13,19 @@
 
 // Implementation
 
+void startWifiCredAcquisition(const char wifiPin){
+	// Wrapper method to start 
+	Serial.println("Initiating WiFi set up");
+
+	// For now, just start infinite loop and flash wifi light on and off
+	while(1){
+		digitalWrite(wifiPin, HIGH);
+		delay(1000);
+		digitalWrite(wifiPin, LOW);
+		delay(1000);
+	}
+}
+
 IPAddress connectToWifi(const char* ssid, const char* password){
 	// Uses the currently set instance vars 
 	// WiFi.mode(WIFI_STA);

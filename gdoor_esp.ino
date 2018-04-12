@@ -20,18 +20,35 @@
 // #include "src/networking/WebServer.hpp"        
 // --> Web Server class doesn't work, could be that strong reference isn't maintained to server object
 
+// Firmware constants
+const int portNumber = 6969;
+
 // Global vars
 GDoorUser user;
 GDoorIO doorIO;
-ESP8266WebServer server(6969);
+ESP8266WebServer server(portNumber);
 
 void setup() {
-  delay(3000);
   Serial.begin(115200);
   Serial.println("Firing up Esp!!");
 
   // Set up GPIO pins
   doorIO.setupGPIOPins();
+
+  delay(4000);
+
+  // Testing
+  // user.persistUserDataToDisk();
+  // startWifiCredAcquisition(doorIO.wifiLEDPin);
+
+  // Attempt to load user data from disk
+  bool loadSuccess = user.loadUserData();
+  if (!loadSuccess){
+    // Start WiFi setup mode
+    startWifiCredAcquisition(doorIO.wifiLEDPin);
+  }
+
+  startWifiCredAcquisition(doorIO.wifiLEDPin);
 
   // Connect to wifi
   user.currentIPAddress = connectToWifi(user.ssid, user.password);        
@@ -45,7 +62,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  // assessDoorState();
+  assessDoorState();
   server.handleClient();
 }
 
@@ -57,36 +74,28 @@ void loop() {
  * pins and their handling
  * 
  */
-
-/*  
+  
 void assessDoorState() {
   // Only read the pin state if the previous value was high
-  if (doorSensorPinState == HIGH){
-    doorSensorPinState = digitalRead(doorSensorPin);
-    
-    if (doorSensorPinState == LOW){
-      // Switch is in actuated state - update door status locally and in DB
-      
-      if (user.currentDoorState == DOOR_STATE_OPEN){
-        Serial.println("MAIN: Door status changed to CLOSED");
-        user.currentDoorState = DOOR_STATE_CLOSED;
-        sendUpdateForState(DOOR_STATE_CLOSED, user.uid);
-      }
+  DoorState currentState = doorIO.assessDoorState();
+  if (currentState == user.currentDoorState){
+      // No update required
+      return;
+  }
 
-      else{
-        Serial.println("MAIN: Door status changed to OPEN");
-        user.currentDoorState = DOOR_STATE_OPEN;
-        sendUpdateForState(DOOR_STATE_OPEN, user.uid);
-      }
-    }
+  // Update the user data
+  user.currentDoorState = currentState;
+  
+  if (currentState == DOOR_STATE_OPEN){
+    Serial.println("MAIN: Door status changed to OPEN");
+    sendUpdateForState(DOOR_STATE_OPEN, user.uid);
   }
 
   else{
-    // Update the pin state only (without a message)
-    doorSensorPinState = digitalRead(doorSensorPin);
+    Serial.println("MAIN: Door status changed to CLOSED");
+    sendUpdateForState(DOOR_STATE_CLOSED, user.uid);
   }
 }
-*/
 
 /*
  *                  Server Setup & Handling
@@ -244,9 +253,10 @@ char* forceHealthCheckEndpoint(){
 /*      Testing Endpoints
  *  
  *  Remote test: {Remote IP}:6969/endpoint
- *  1. 192.143.147.232:6969/2XsXatJ4DgdltTMcIcrC146aUNZ2/ActuateDoor
+ *  1. 192.143.147.232:6969/k4ozP54JHab6NrK8UU8HbskopPH3/ActuateDoor
+ *  - 192.143.10.217:6969/k4ozP54JHab6NrK8UU8HbskopPH3/ActuateDoor
  *  
- *  1. 10.0.1.41/2XsXatJ4DgdltTMcIcrC146aUNZ2/ActuateDoor                 || 
+ *  1. 10.0.1.41/k4ozP54JHab6NrK8UU8HbskopPH3/ActuateDoor                 || 
  *  2. 10.0.1.41/2XsXatJ4DgdltTMcIcrC146aUNZ2/HealthCheck
  *  3. 10.0.1.41/2XsXatJ4DgdltTMcIcrC146aUNZ2/ForceDoorStatusCheck
  *  4. 10.0.1.41/2XsXatJ4DgdltTMcIcrC146aUNZ2/ForceHealthCheck

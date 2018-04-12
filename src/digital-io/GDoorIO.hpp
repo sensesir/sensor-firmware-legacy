@@ -18,18 +18,24 @@
 
 class GDoorIO{
 	public:
-		int doorSensorPin = 12;
-		int relayPin = 2;
-		int wifiLEDPin = 14;
-		int pulseLength = 1500;		// Milis
+		int doorSensorPin = 14;
+		int relayPin 	  = 4;
+		int wifiLEDPin 	  = 5;
+		int hardResetPin  = 15;
+		int pulseLength   = 1500;		// Milis
 
-		const char* dummyVar;
+		// Unused exposed pins
+		int uPin16 = 16;
+		int uPin12 = 12;
+		int uPin13 = 13;
+		int uPin2  = 2;
 
 		// Public methods
 		GDoorIO();
 
 		void setupGPIOPins();
 		void actuateDoor();
+		DoorState assessDoorState();
 };
 
 

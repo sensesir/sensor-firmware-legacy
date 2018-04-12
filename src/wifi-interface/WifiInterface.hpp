@@ -14,9 +14,8 @@
 #include <ESP8266WiFi.h>
 #include <Arduino.h>
 
-
 // Methods
 IPAddress connectToWifi(const char* ssid, const char* password);
-
+void startWifiCredAcquisition(const char wifiPin);
 
 #endif

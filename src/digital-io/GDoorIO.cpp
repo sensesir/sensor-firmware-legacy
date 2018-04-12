@@ -12,16 +12,22 @@
 // Implementation
 GDoorIO::GDoorIO(){
 	// Fill the constructor with something
-	dummyVar = "O";
 }
 
 void GDoorIO::setupGPIOPins(){
   Serial.println("Setting GPIO Pins to correct IO state");
   
-  // pinMode(doorSensorPin, INPUT);
+  pinMode(doorSensorPin, INPUT);
   pinMode(relayPin, OUTPUT);
   digitalWrite(relayPin, LOW);
-  // pinMode(wifiLEDPin, OUTPUT);
+  pinMode(hardResetPin, INPUT);
+  pinMode(wifiLEDPin, OUTPUT);
+
+  // Set the unused pins as inputs (High Z)
+  pinMode(uPin16, INPUT);
+  pinMode(uPin12, INPUT);
+  pinMode(uPin13, INPUT);
+  pinMode(uPin2,  INPUT);
 }
 
 void GDoorIO::actuateDoor(){
@@ -45,7 +51,25 @@ void GDoorIO::actuateDoor(){
 *
 */
 
-DoorState assessDoorState(){
+DoorState GDoorIO::assessDoorState(){
 	// Coming
+	int count = 0;
+	for (int i = 0; i < 10; i++) {
+		if(digitalRead(doorSensorPin) == HIGH){
+			return DOOR_STATE_OPEN;
+		}
+
+		delay(100);
+	}
+
+	return DOOR_STATE_CLOSED;
 }
+
+
+
+
+
+
+
+
 
