@@ -77,57 +77,35 @@ bool GDoorUser::loadUserData(){
  	// EEPROM shiuld be pre-initialized
  	int memAddress = 2;	// Data starts at address 2
 
- 	const char* tesingChar;
-
  	// Read UID
- 	uid = readDataIntoCharPointer(&memAddress);
- 	delay(500);
+ 	readDataIntoCharPointer(&memAddress, uid);
  	Serial.print("GDOOR USER: Read UID => ");
- 	Serial.print(uid);
- 	Serial.println("");
+ 	Serial.println(uid);
+ 	Serial.print("GDOOR USER: Length of UID = ");
+ 	Serial.println(strlen(uid));
 
- 	// Testing
- 	for(int j = 0; j < strlen(uid); j++){
- 		Serial.print("Index = ");
- 		Serial.print(j);
- 		Serial.print("    Value = ");
- 		Serial.println(uid[j]);
- 	}
-
- 	const char* test = "k4ozP54JHab6NrK8UU8HbskopPH3";
-
-	for(int j = 0; j < strlen(test); j++){
- 		Serial.print("Index = ");
- 		Serial.print(j);
- 		Serial.print("   Value = ");
- 		Serial.println(test[j]);
- 	} 	
- 	
- 	ssid = readDataIntoCharPointer(&memAddress);
- 	delay(500);
+ 	readDataIntoCharPointer(&memAddress, ssid);
  	Serial.print("GDOOR USER: Reading SSID => ");
- 	Serial.print(ssid);
- 	Serial.println("");
+ 	Serial.println(ssid);
+ 	Serial.print("GDOOR USER: Length of SSID = ");
+ 	Serial.println(strlen(ssid));
 
- 	password = readDataIntoCharPointer(&memAddress);
- 	delay(500);
+ 	readDataIntoCharPointer(&memAddress, password);
  	Serial.print("GDOOR USER: Reading Password => ");
- 	Serial.print(password);
- 	Serial.println("");
+ 	Serial.println(password);
+ 	Serial.print("GDOOR USER: Length of Password = ");
+ 	Serial.println(strlen(password));
 
  	Serial.print("GDOOR USER: Read ");
 	Serial.print(memAddress);
 	Serial.println(" bytes from disk");
  }
 
- const char* GDoorUser::readDataIntoCharPointer(int* addrPointer){
+ void GDoorUser::readDataIntoCharPointer(int* addrPointer, char* target){
 
  	int loopLen = 512 - *addrPointer;
-	Serial.println("");
 	Serial.print("GDOOR USER: Reading from address = ");
 	Serial.println(*addrPointer);
-
- 	char dataArray[40];					// Testing size
 
  	for (int i = 0; i < loopLen; ++i) {
  	
@@ -146,8 +124,8 @@ bool GDoorUser::loadUserData(){
  				Serial.println(*addrPointer);
 
  				// Add string terminator
- 				dataArray[i] = 92;		// ASCII = '\'
- 				dataArray[i+1] = 48;		// ASCII = '0'
+ 				target[i+1] = 0;		// ASCII = Null terminator
+ 				*addrPointer += 1;
  				break;
  			} else{
  				// Read error
@@ -155,14 +133,9 @@ bool GDoorUser::loadUserData(){
  			}
  		}
 
- 		dataArray[i] = data;		// Implicit cast byte to char
+ 		target[i] = data;		
  		*addrPointer += 1;
  	}
-
- 	// Data array 
- 	Serial.print("Full Array = ");
-	Serial.println(dataArray);
- 	return &dataArray[0];
  }
 
 /*

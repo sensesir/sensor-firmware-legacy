@@ -22,11 +22,13 @@
 
 // Firmware constants
 const int portNumber = 6969;
+const char* portNumberStr = "6969";
 
 // Global vars
 GDoorUser user;
 GDoorIO doorIO;
 ESP8266WebServer server(portNumber);
+
 
 void setup() {
   Serial.begin(115200);
@@ -34,12 +36,7 @@ void setup() {
 
   // Set up GPIO pins
   doorIO.setupGPIOPins();
-
-  delay(4000);
-
-  // Testing
-  // user.persistUserDataToDisk();
-  // startWifiCredAcquisition(doorIO.wifiLEDPin);
+  delay(1000);
 
   // Attempt to load user data from disk
   bool loadSuccess = user.loadUserData();
@@ -48,10 +45,12 @@ void setup() {
     startWifiCredAcquisition(doorIO.wifiLEDPin);
   }
 
-  startWifiCredAcquisition(doorIO.wifiLEDPin);
-
   // Connect to wifi
   user.currentIPAddress = connectToWifi(user.ssid, user.password);        
+  digitalWrite(doorIO.wifiLEDPin, HIGH);
+
+  // Write port number to database
+    
 
   // Set up the server
   serverSetup();

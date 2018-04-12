@@ -24,9 +24,9 @@ class GDoorUser{
 		const byte LF = 10;
 
 		// Public properties
-		const char* uid;
-		const char* ssid;
-		const char* password;
+		char uid[29];
+		char ssid[40];
+		char password[40];
 		IPAddress currentIPAddress; 
 
 		DoorState currentDoorState;
@@ -39,7 +39,7 @@ class GDoorUser{
 	private:
 		// Private methods
 		void readUserDataFromDisk();
-		const char* readDataIntoCharPointer(int* addrPointer);
+		void readDataIntoCharPointer(int* addrPointer, char* target);
 		void writeCharArrayToDisk(const char* data, int* addrPointer);
 };
 

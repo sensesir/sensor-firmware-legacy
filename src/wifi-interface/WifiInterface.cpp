@@ -47,5 +47,8 @@ IPAddress connectToWifi(const char* ssid, const char* password){
 	IPAddress ipAddress = WiFi.localIP();
 	Serial.print("WIFI INTERFACE: Assigned IP address = ");
 	Serial.println(ipAddress);
+
+	// Set up static IP
+
 	return ipAddress;
 }

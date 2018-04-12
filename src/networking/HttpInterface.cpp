@@ -12,6 +12,38 @@
 
 // Function prototypes
 const char* createHttpJson(const char* stateStr, const char* uid);
+void createServerPortJSONEntry(const char* port, char* target, int* index);
+
+/*
+ *                            Upload Boot Info
+ *
+ *    Sends required info to server to be passed to DB for communication 
+ *    with ESP JSON string is loaded individually function by function.
+ *    
+ *    Information sent:
+ *
+ *      1) Server port number
+ *      2) Sensor recorderd UID
+ *      3) Sensor firmware version
+ *  
+*/
+
+void uploadBootInfo(const char* portNum, const char* recordedUID, const char* firmwareVersion){
+  // Create the POST request
+  Serial.print("HTTP INTERFACE: Sending boot info to server.");
+
+  // Create the JSON string
+  char payload[120];
+  int payloadIndex = 1;
+  payload[0] = "{";
+
+  // Load the char array func by func
+  createServerPortJSONEntry(portNum, payload, &payloadIndex);
+  
+}
+
+
+
 
 /*
  *                      Update Door State
@@ -47,6 +79,7 @@ void sendUpdateForState(DoorState newState, const char* senderUID){
    // Close connection
    httpReq.end();
 }
+
 
 /*
  *                         Health check response
@@ -85,6 +118,24 @@ const char* createHttpJson(const char* stateStr, const char* uid){
   return payload;
 }
 
+void createServerPortJSONEntry(const char* port, char* target, int* index){
+    // Add the key first
+    const char* key = "\"serverPort\":\"";
+    for (int i = 0; i < strlen(key); i++){
+      target[*index] = key[i];
+      *index += 1;
+    }
+
+    // Add the value
+    for (int j = 0; j < strlen(port); j++){
+      target[*index] = port[j];
+      *index +=1;
+    }
+
+    // Finish entry with "
+    target[*index] = "\"";
+    *index += 1;
+}
 
 
 
