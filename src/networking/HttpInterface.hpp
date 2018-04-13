@@ -20,6 +20,6 @@
 
 // Function declarations
 void sendUpdateForState(DoorState newState, const char* senderUID);
-void uploadBootInfo(const char* portNum, const char* recordedUID, const char* firmwareVersion);
+void uploadBootInfo(const char* portNum, const char* recordedUID, const char* firmwareVersion, const char* targetStaticIP, const char* assignedLocalIP);
 
 #endif

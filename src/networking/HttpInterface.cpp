@@ -28,31 +28,13 @@ void addKeyValueJSONStringEntry(const char* key, const char* value, char* target
  *  
 */
 
-void uploadBootInfo(const char* portNum, const char* recordedUID, const char* firmwareVersion){
+void uploadBootInfo(const char* portNum, const char* recordedUID, const char* firmwareVersion, const char* targetStaticIP, const char* assignedLocalIP){
   // Create the POST request
   Serial.print("HTTP INTERFACE: Sending boot info to server.");
 
   // Create the JSON string
-  char payload[120];
-  int payloadIndex = 1;
-  payload[0] = *"{";
-
-  // Load the char array func by func
-  // Server port
-  addKeyValueJSONStringEntry("serverPort", portNum, payload, &payloadIndex);
-  payload[payloadIndex] = *",";
-  payloadIndex += 1;
-
-  // UID 
-  addKeyValueJSONStringEntry("uid", recordedUID, payload, &payloadIndex);
-  payload[payloadIndex] = *",";
-  payloadIndex += 1;
-
-  // Firmware version
-  addKeyValueJSONStringEntry("firmwareVersion", firmwareVersion, payload, &payloadIndex);
-  payload[payloadIndex] = *"}";
-  payloadIndex += 1;
-  payload[payloadIndex] = 0; // Null terminated
+  char payload[250];
+  sprintf(payload, "{\"serverPort\":\"%s\",\"uid\":\"%s\",\"firmwareVersion\":\"%s\",\"targetStaticIP\":\"%s\",\"assignedLocalIP\":\"%s\"}", portNum, recordedUID, firmwareVersion, targetStaticIP, assignedLocalIP);
 
   // Have a look at the end product
   Serial.print("HTTP INTERFACE: JSON payload = ");
@@ -75,8 +57,6 @@ void uploadBootInfo(const char* portNum, const char* recordedUID, const char* fi
    // Close connection
    httpReq.end();
 }
-
-
 
 
 /*

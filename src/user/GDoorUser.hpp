@@ -33,11 +33,14 @@ class GDoorUser{
 		int gatewayIPArr[4];		
 		int subnetMaskIpArr[4];
 		int espStaticOctet = 250;				// May have to make this dynamic in future (The irony - haha)
+		char gatewayIPStr[20];
+		char assignedIPStr[20];
 
 		// Public methods
 		GDoorUser();
 		bool loadUserData();
 		void persistUserDataToDisk();
+		void createIPStrings();
 
 	private:
 		// Private methods

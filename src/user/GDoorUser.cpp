@@ -289,6 +289,16 @@ void GDoorUser::writeIntArrayToDisk(int* data, int* addrPointer, int arrayLength
 
 // Debug analysis
 
+void GDoorUser::createIPStrings(){
+	// Convert int array to string
+	IPAddress targetIP(gatewayIPArr[0], gatewayIPArr[1], gatewayIPArr[2], espStaticOctet);
+	sprintf(gatewayIPStr, "%d.%d.%d.%d", targetIP[0], targetIP[1], targetIP[2], targetIP[3]);
+
+	// Convert IPAddress type to char* array
+	sprintf(assignedIPStr, "%d.%d.%d.%d", currentIPAddress[0], currentIPAddress[1], currentIPAddress[2], currentIPAddress[3]);
+}
+
+
 void GDoorUser::printIPIntArray(int* data){
 	// loop through the data and print
 	for (int i = 0; i < sizeof(data); i++) {

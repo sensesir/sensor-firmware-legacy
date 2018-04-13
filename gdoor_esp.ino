@@ -54,7 +54,9 @@ void setup() {
   delay(500); 
 
   // Write boot updates to DB & initial door state
-  uploadBootInfo(portNumberStr, user.uid, firmWVersion);
+  Serial.println("Testing: Creating IP strings");
+  user.createIPStrings();
+  uploadBootInfo(portNumberStr, user.uid, firmWVersion, user.gatewayIPStr, user.assignedIPStr);
   delay(500);  
   sendInitialDoorState();
 
