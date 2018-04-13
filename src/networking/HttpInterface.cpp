@@ -12,7 +12,7 @@
 
 // Function prototypes
 const char* createHttpJson(const char* stateStr, const char* uid);
-void createServerPortJSONEntry(const char* port, char* target, int* index);
+void addKeyValueJSONStringEntry(const char* key, const char* value, char* target, int* index);
 
 /*
  *                            Upload Boot Info
@@ -35,11 +35,45 @@ void uploadBootInfo(const char* portNum, const char* recordedUID, const char* fi
   // Create the JSON string
   char payload[120];
   int payloadIndex = 1;
-  payload[0] = "{";
+  payload[0] = *"{";
 
   // Load the char array func by func
-  createServerPortJSONEntry(portNum, payload, &payloadIndex);
-  
+  // Server port
+  addKeyValueJSONStringEntry("serverPort", portNum, payload, &payloadIndex);
+  payload[payloadIndex] = *",";
+  payloadIndex += 1;
+
+  // UID 
+  addKeyValueJSONStringEntry("uid", recordedUID, payload, &payloadIndex);
+  payload[payloadIndex] = *",";
+  payloadIndex += 1;
+
+  // Firmware version
+  addKeyValueJSONStringEntry("firmwareVersion", firmwareVersion, payload, &payloadIndex);
+  payload[payloadIndex] = *"}";
+  payloadIndex += 1;
+  payload[payloadIndex] = 0; // Null terminated
+
+  // Have a look at the end product
+  Serial.print("HTTP INTERFACE: JSON payload = ");
+  Serial.println(payload);
+
+  // Create the HTTP post req
+  HTTPClient httpReq;
+  httpReq.begin("http://us-central1-iot-za.cloudfunctions.net/sensorBootData");  
+  httpReq.addHeader("Content-Type", "text/plain");
+
+  int resCode = httpReq.POST(payload);
+
+  // Look for the response & examine 
+   String resString = httpReq.getString();
+   Serial.println();
+   Serial.print("Receieved response to HTTP POST:  ");
+   Serial.println(resCode);
+   Serial.println(resString);
+
+   // Close connection
+   httpReq.end();
 }
 
 
@@ -118,24 +152,33 @@ const char* createHttpJson(const char* stateStr, const char* uid){
   return payload;
 }
 
-void createServerPortJSONEntry(const char* port, char* target, int* index){
+void addKeyValueJSONStringEntry(const char* key, const char* value, char* target, int* index){
     // Add the key first
-    const char* key = "\"serverPort\":\"";
+    target[*index] = *"\"";
+    *index += 1;
+
+    // Add they key
     for (int i = 0; i < strlen(key); i++){
       target[*index] = key[i];
       *index += 1;
     }
 
+    target[*index] = *"\"";
+    target[*index + 1] = *":";
+    target[*index + 2] = *"\"";
+    *index += 3;
+
     // Add the value
-    for (int j = 0; j < strlen(port); j++){
-      target[*index] = port[j];
+    for (int j = 0; j < strlen(value); j++){
+      target[*index] = value[j];
       *index +=1;
     }
 
     // Finish entry with "
-    target[*index] = "\"";
+    target[*index] = *"\"";
     *index += 1;
 }
+
 
 
 

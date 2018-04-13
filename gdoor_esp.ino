@@ -21,6 +21,7 @@
 // --> Web Server class doesn't work, could be that strong reference isn't maintained to server object
 
 // Firmware constants
+const char* firmWVersion = "1.0.0";   // Weird name because of namespace conflicts
 const int portNumber = 6969;
 const char* portNumberStr = "6969";
 
@@ -46,11 +47,14 @@ void setup() {
   }
 
   // Connect to wifi
-  user.currentIPAddress = connectToWifi(user.ssid, user.password);        
+  user.currentIPAddress = connectToWifi(user.ssid, user.password);                    // connectToWifi("FutureLab 2", "CapeTownS001");     
   digitalWrite(doorIO.wifiLEDPin, HIGH);
+  delay(500); 
 
-  // Write port number to database
-    
+  // Write boot updates to DB & initial door state
+  uploadBootInfo(portNumberStr, user.uid, firmWVersion);
+  delay(500);  
+  sendInitialDoorState();
 
   // Set up the server
   serverSetup();
@@ -73,6 +77,22 @@ void loop() {
  * pins and their handling
  * 
  */
+
+void sendInitialDoorState(){
+  // Update the user data
+  DoorState currentState = doorIO.assessDoorState();
+  user.currentDoorState = currentState;
+  
+  if (currentState == DOOR_STATE_OPEN){
+    Serial.println("MAIN: Door status changed to OPEN");
+    sendUpdateForState(DOOR_STATE_OPEN, user.uid);
+  }
+
+  else{
+    Serial.println("MAIN: Door status changed to CLOSED");
+    sendUpdateForState(DOOR_STATE_CLOSED, user.uid);
+  }
+}
   
 void assessDoorState() {
   // Only read the pin state if the previous value was high

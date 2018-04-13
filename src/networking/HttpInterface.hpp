@@ -20,5 +20,6 @@
 
 // Function declarations
 void sendUpdateForState(DoorState newState, const char* senderUID);
+void uploadBootInfo(const char* portNum, const char* recordedUID, const char* firmwareVersion);
 
 #endif

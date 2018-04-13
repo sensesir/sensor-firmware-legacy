@@ -16,4 +16,8 @@ typedef enum doorState {
   DOOR_STATE_CLOSED
 } DoorState;
 
+// ASCII lookups
+// const char leftCurlyBracket = 
+
+
 #endif

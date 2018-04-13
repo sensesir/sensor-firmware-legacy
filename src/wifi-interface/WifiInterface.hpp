@@ -14,6 +14,9 @@
 #include <ESP8266WiFi.h>
 #include <Arduino.h>
 
+// Static IP 
+// const char* staticIP = "192.168.1.105";
+
 // Methods
 IPAddress connectToWifi(const char* ssid, const char* password);
 void startWifiCredAcquisition(const char wifiPin);

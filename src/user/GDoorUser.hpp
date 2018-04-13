@@ -19,7 +19,6 @@ class GDoorUser{
 	
 	public:	
 		// Constants 
-		const char* firmwareVersion = "1.0.0";
 		const byte CR = 13;
 		const byte LF = 10;
 
