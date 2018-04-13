@@ -12,7 +12,7 @@
 #include "WifiInterface.hpp"
 
 // Function prototypes
-void setupStaticSensorIP();
+void setupStaticSensorIP(const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet);
 
 // Implementation
 
@@ -29,17 +29,18 @@ void startWifiCredAcquisition(const char wifiPin){
 	}
 }
 
-IPAddress connectToWifi(const char* ssid, const char* password){
+IPAddress connectToWifi(const char* ssid, const char* password, const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet){
 	// Uses the currently set instance vars 
 	// Attempt to create static IP
 	WiFi.mode(WIFI_STA);
 
 	// Attempt to create static IP
 	WiFi.begin(ssid, password);
-	setupStaticSensorIP();
+	setupStaticSensorIP(gatewayIPArr, subnetIPArr, staticOctet);
 
 	// Wait for a connection
-	Serial.println("WIFI INTERFACE: Attempting to connect to WiFi");
+	Serial.print("WIFI INTERFACE: Attempting to connect to WiFi => ");
+	Serial.println(ssid);
 	while (WiFi.status() != WL_CONNECTED){
 		delay(500);
 		Serial.print(".");
@@ -62,11 +63,11 @@ IPAddress connectToWifi(const char* ssid, const char* password){
 	return ipAddress;
 }
 
-void setupStaticSensorIP(){
+void setupStaticSensorIP(const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet){
 	// Create stati IP - 192.168.1.105
-	IPAddress ip(192, 168, 8, 250);					// Virtual server: 192.168.8.105
-	IPAddress subnet(255, 255, 255, 0);
-	IPAddress gateway(192, 168, 8, 1);				// Router IP - gateway(192, 168, 8, 1); 	
+	IPAddress ip(gatewayIPArr[0], gatewayIPArr[1], gatewayIPArr[2], staticOctet);					// Virtual server: 192.168.8.105
+	IPAddress subnet(subnetIPArr[0], subnetIPArr[1], subnetIPArr[2], subnetIPArr[3]);
+	IPAddress gateway(gatewayIPArr[0], gatewayIPArr[1], gatewayIPArr[2], gatewayIPArr[3]);				// Router IP - gateway(192, 168, 8, 1); 	
 
 	Serial.print("WIFI INTERFACE: Configuring static IP address => ");
 	Serial.println(ip);

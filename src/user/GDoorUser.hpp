@@ -26,9 +26,13 @@ class GDoorUser{
 		char uid[29];
 		char ssid[40];
 		char password[40];
-		IPAddress currentIPAddress; 
-
 		DoorState currentDoorState;
+
+		// Networking props
+		IPAddress currentIPAddress; 
+		int gatewayIPArr[4];		
+		int subnetMaskIpArr[4];
+		int espStaticOctet = 250;				// May have to make this dynamic in future (The irony - haha)
 
 		// Public methods
 		GDoorUser();
@@ -39,7 +43,10 @@ class GDoorUser{
 		// Private methods
 		void readUserDataFromDisk();
 		void readDataIntoCharPointer(int* addrPointer, char* target);
+		void readDataIntoIntPointer(int* addrPointer, int* target);
 		void writeCharArrayToDisk(const char* data, int* addrPointer);
+		void writeIntArrayToDisk(int* data, int* addrPointer, int arrayLength);
+		void printIPIntArray(int* data);
 };
 
 

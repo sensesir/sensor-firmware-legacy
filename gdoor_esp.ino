@@ -24,12 +24,14 @@
 const char* firmWVersion = "1.0.0";   // Weird name because of namespace conflicts
 const int portNumber = 6969;
 const char* portNumberStr = "6969";
+const unsigned long healthCheckInterval = 5000; // 3600000;        // An hour in milliseconds (for health ping)
 
 // Global vars
 GDoorUser user;
 GDoorIO doorIO;
 ESP8266WebServer server(portNumber);
-
+unsigned long currentMillis = 1;        //make sure they don't equate on first check
+unsigned long previousMillis = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -37,7 +39,7 @@ void setup() {
 
   // Set up GPIO pins
   doorIO.setupGPIOPins();
-  delay(1000);
+  delay(3000);
 
   // Attempt to load user data from disk
   bool loadSuccess = user.loadUserData();
@@ -45,9 +47,9 @@ void setup() {
     // Start WiFi setup mode
     startWifiCredAcquisition(doorIO.wifiLEDPin);
   }
-
+ 
   // Connect to wifi
-  user.currentIPAddress = connectToWifi(user.ssid, user.password);                    // connectToWifi("FutureLab 2", "CapeTownS001");     
+  user.currentIPAddress = connectToWifi(user.ssid, user.password, user.gatewayIPArr, user.subnetMaskIpArr, user.espStaticOctet);                    // connectToWifi("FutureLab 2", "CapeTownS001");     
   digitalWrite(doorIO.wifiLEDPin, HIGH);
   delay(500); 
 
@@ -67,8 +69,36 @@ void loop() {
   // put your main code here, to run repeatedly:
   assessDoorState();
   server.handleClient();
+  healthCheckTimeQuery();
 }
 
+/*
+ *                Health Ping Update
+ * 
+ *  Handler function to assess the current millies period  
+ *  - accounting for roll over. If the current period exceeds 
+ *  the set interval, a health ping is sent to the server.
+ * 
+ */
+
+void healthCheckTimeQuery(){
+  currentMillis = millis();
+  unsigned long millisDiff = currentMillis - previousMillis;
+
+  if(millisDiff > healthCheckInterval) {
+    // Need to do a health update  
+    Serial.println("MAIN: Health check time - hitting API");
+
+    // Update the previous time checkpoint
+    previousMillis = currentMillis;
+  } 
+
+  else if(currentMillis < previousMillis){
+    // Roll over --> Need to reset
+    Serial.println("MAIN: Millis rollover - resetting counters");
+    previousMillis = 0;
+  }
+}
 
 /*
  *                GPIO Handling

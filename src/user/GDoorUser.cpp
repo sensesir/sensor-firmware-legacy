@@ -84,17 +84,33 @@ bool GDoorUser::loadUserData(){
  	Serial.print("GDOOR USER: Length of UID = ");
  	Serial.println(strlen(uid));
 
+ 	// SSID
  	readDataIntoCharPointer(&memAddress, ssid);
  	Serial.print("GDOOR USER: Reading SSID => ");
  	Serial.println(ssid);
  	Serial.print("GDOOR USER: Length of SSID = ");
  	Serial.println(strlen(ssid));
 
+ 	// Password
  	readDataIntoCharPointer(&memAddress, password);
  	Serial.print("GDOOR USER: Reading Password => ");
  	Serial.println(password);
  	Serial.print("GDOOR USER: Length of Password = ");
  	Serial.println(strlen(password));
+
+ 	// GatewayIP
+	readDataIntoIntPointer(&memAddress, gatewayIPArr);
+ 	Serial.print("GDOOR USER: Reading Gateway IP => ");
+ 	printIPIntArray(gatewayIPArr);
+ 	Serial.print("GDOOR USER: Length of Gateway IP = ");
+ 	Serial.println(sizeof(gatewayIPArr));
+
+ 	// Subnet Mask
+ 	readDataIntoIntPointer(&memAddress, subnetMaskIpArr);
+ 	Serial.print("GDOOR USER: Reading Subnet Mask => ");
+ 	printIPIntArray(subnetMaskIpArr);
+ 	Serial.print("GDOOR USER: Length of Subnet Mask = ");
+ 	Serial.println(sizeof(subnetMaskIpArr));
 
  	Serial.print("GDOOR USER: Read ");
 	Serial.print(memAddress);
@@ -104,8 +120,8 @@ bool GDoorUser::loadUserData(){
  void GDoorUser::readDataIntoCharPointer(int* addrPointer, char* target){
 
  	int loopLen = 512 - *addrPointer;
-	Serial.print("GDOOR USER: Reading from address = ");
-	Serial.println(*addrPointer);
+	// Serial.print("GDOOR USER: Reading from address = ");
+	// Serial.println(*addrPointer);
 
  	for (int i = 0; i < loopLen; ++i) {
  	
@@ -114,14 +130,51 @@ bool GDoorUser::loadUserData(){
  		
  		if (data == CR) {
  			// Check for LF at next address
- 			Serial.println("GDOOR USER: Found CR delimiter. ");
+ 			// Serial.println("GDOOR USER: Found CR delimiter. ");
  			
  			*addrPointer += 1;
  			char delimiter = EEPROM.read(*addrPointer);
 
  			if (delimiter == LF){
- 				Serial.print("GDOOR USER: Found LF delimiter. Address = ");
- 				Serial.println(*addrPointer);
+ 				// Serial.print("GDOOR USER: Found LF delimiter. Address = ");
+ 				// Serial.println(*addrPointer);
+
+ 				// Add string terminator
+ 				target[i+1] = 0;		// ASCII = Null terminator
+ 				*addrPointer += 1;
+ 				break;
+ 			} else{
+ 				// Read error
+ 				Serial.println("GDOOR USER: Read error - isolated delimitor");
+ 			}
+ 		}
+
+ 		target[i] = data;		
+ 		*addrPointer += 1;
+ 	}
+ }
+
+ void GDoorUser::readDataIntoIntPointer(int* addrPointer, int* target){
+
+ 	int loopLen = 512 - *addrPointer;
+	// Serial.print("GDOOR USER: Reading from address = ");
+	// Serial.println(*addrPointer);
+
+ 	for (int i = 0; i < loopLen; ++i) {
+ 	
+ 		// Read byte from memory
+ 		byte data = EEPROM.read(*addrPointer);
+ 		
+ 		if (data == CR) {
+ 			// Check for LF at next address
+ 			// Serial.println("GDOOR USER: Found CR delimiter. ");
+ 			
+ 			*addrPointer += 1;
+ 			char delimiter = EEPROM.read(*addrPointer);
+
+ 			if (delimiter == LF){
+ 				// Serial.print("GDOOR USER: Found LF delimiter. Address = ");
+ 				// Serial.println(*addrPointer);
 
  				// Add string terminator
  				target[i+1] = 0;		// ASCII = Null terminator
@@ -172,10 +225,22 @@ void GDoorUser::persistUserDataToDisk() {
 	// Write the uid
 	Serial.print("GDOOR USER: Writing UID to disk = ");
 	writeCharArrayToDisk(uid, memAddrPointer);
+	
+	// SSID
 	Serial.print("GDOOR USER: Writing SSID to disk = ");
 	writeCharArrayToDisk(ssid, memAddrPointer);
+	
+	// Password
 	Serial.print("GDOOR USER: Writing Password to disk = ");
 	writeCharArrayToDisk(password, memAddrPointer);
+
+	// Gateway IP
+	Serial.print("GDOOR USER: Writing gateway IP to disk = ");
+	writeIntArrayToDisk(gatewayIPArr, memAddrPointer, 4);
+
+	// Subnet Mask
+	Serial.print("GDOOR USER: Writing subnet mask to disk = ");
+	writeIntArrayToDisk(subnetMaskIpArr, memAddrPointer, 4);
 
 	// Commit the data
 	EEPROM.end();
@@ -203,7 +268,38 @@ void GDoorUser::writeCharArrayToDisk(const char* data, int* addrPointer){
 	Serial.println(*addrPointer);
 }
 
+void GDoorUser::writeIntArrayToDisk(int* data, int* addrPointer, int arrayLength){
 
+	for (int i = 0; i < arrayLength; ++i) {
+		EEPROM.write(*addrPointer, data[i]);
+		*addrPointer += 1;
+		Serial.print(data[i]);
+	}
+
+	// Add CRLF
+	EEPROM.write(*addrPointer, CR);
+	*addrPointer += 1;
+	EEPROM.write(*addrPointer, LF);
+	*addrPointer += 1;
+
+	Serial.println("");
+	Serial.print("GDOOR USER: Current memory address pointer = ");
+	Serial.println(*addrPointer);
+}
+
+// Debug analysis
+
+void GDoorUser::printIPIntArray(int* data){
+	// loop through the data and print
+	for (int i = 0; i < sizeof(data); i++) {
+		// Print
+		Serial.print(*data);
+		Serial.print(".");
+		data += 1;
+	}
+
+	Serial.println("");
+}
 
 
 
