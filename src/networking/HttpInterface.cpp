@@ -94,6 +94,43 @@ void sendUpdateForState(DoorState newState, const char* senderUID){
    httpReq.end();
 }
 
+/*
+ *                      Update Door Health
+ *
+ *  Function sends an http post to the server health check API 
+ *  endpoint. The payload the current millis count. 
+ * 
+*/
+
+void sendHealthCheckUpdate(unsigned long currentMillis, const char* senderUID){
+  // Create the POST request
+  Serial.print("HTTP INTERFACE: Sending health update to server.");
+
+  // Create the JSON string
+  char payload[150];
+  sprintf(payload, "{\"uid\":\"%s\",\"millis\":\"%lu\"}", senderUID, currentMillis);
+
+  // Have a look at the end product
+  Serial.print("HTTP INTERFACE: JSON payload = ");
+  Serial.println(payload);
+
+  // Create the HTTP post req
+  HTTPClient httpReq;
+  httpReq.begin("http://us-central1-iot-za.cloudfunctions.net/sensorHealthUpdate");  
+  httpReq.addHeader("Content-Type", "text/plain");
+
+  int resCode = httpReq.POST(payload);
+
+  // Look for the response & examine 
+   String resString = httpReq.getString();
+   Serial.println();
+   Serial.print("Receieved response to HTTP POST:  ");
+   Serial.println(resCode);
+   Serial.println(resString);
+
+   // Close connection
+   httpReq.end();
+}
 
 /*
  *                         Health check response

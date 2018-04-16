@@ -24,7 +24,7 @@
 const char* firmWVersion = "1.0.0";   // Weird name because of namespace conflicts
 const int portNumber = 6969;
 const char* portNumberStr = "6969";
-const unsigned long healthCheckInterval = 5000; // 3600000;        // An hour in milliseconds (for health ping)
+const unsigned long healthCheckInterval = 900000; // 15 mins in milliseconds (for health ping)
 
 // Global vars
 GDoorUser user;
@@ -54,7 +54,6 @@ void setup() {
   delay(500); 
 
   // Write boot updates to DB & initial door state
-  Serial.println("Testing: Creating IP strings");
   user.createIPStrings();
   uploadBootInfo(portNumberStr, user.uid, firmWVersion, user.gatewayIPStr, user.assignedIPStr);
   delay(500);  
@@ -90,6 +89,9 @@ void healthCheckTimeQuery(){
   if(millisDiff > healthCheckInterval) {
     // Need to do a health update  
     Serial.println("MAIN: Health check time - hitting API");
+
+    // Update server
+    sendHealthCheckUpdate(currentMillis, user.uid);
 
     // Update the previous time checkpoint
     previousMillis = currentMillis;
