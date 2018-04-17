@@ -49,8 +49,7 @@ void setup() {
   }
  
   // Connect to wifi
-  user.currentIPAddress = connectToWifi(user.ssid, user.password, user.gatewayIPArr, user.subnetMaskIpArr, user.espStaticOctet);                    // connectToWifi("FutureLab 2", "CapeTownS001");     
-  digitalWrite(doorIO.wifiLEDPin, HIGH);
+  user.currentIPAddress = connectToWifi(user.ssid, user.password, user.gatewayIPArr, user.subnetMaskIpArr, user.espStaticOctet, doorIO.wifiLEDPin);                       
   delay(500); 
 
   // Write boot updates to DB & initial door state
@@ -71,6 +70,11 @@ void loop() {
   assessDoorState();
   server.handleClient();
   healthCheckTimeQuery();
+
+  // Check connectivity state
+  if (WiFi.status() != WL_CONNECTED){
+    handleWifiReconProcedure();
+  }
 }
 
 /*
@@ -102,6 +106,19 @@ void healthCheckTimeQuery(){
     Serial.println("MAIN: Millis rollover - resetting counters");
     previousMillis = 0;
   }
+}
+
+void handleWifiReconProcedure(){
+  user.currentIPAddress = setWiFiReconnectingState();
+  user.createIPStrings();
+  delay(500); 
+
+  // Reset millis - no need for a health check immediately after recon not
+  previousMillis = millis();
+  
+  // Indicate to the server that the sensor is back online
+  sendReconnectionNotification(user.uid, user.assignedIPStr);
+  delay(500); 
 }
 
 /*

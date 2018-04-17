@@ -18,7 +18,9 @@
 // const char* staticIP = "192.168.1.105";
 
 // Methods
-IPAddress connectToWifi(const char* ssid, const char* password, const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet);
 void startWifiCredAcquisition(const char wifiPin);
+IPAddress connectToWifi(const char* ssid, const char* password, const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet, const char ledPin);
+IPAddress setWiFiReconnectingState();
+
 
 #endif

@@ -133,6 +133,43 @@ void sendHealthCheckUpdate(unsigned long currentMillis, const char* senderUID){
 }
 
 /*
+ *              Wifi Con Dropout
+ *
+ *  In cases where the ESP's wifi connection drops, we 
+ *  want to know about this - to analyze frequency.
+ * 
+*/
+
+void sendReconnectionNotification(const char* senderUID, const char* assignedLocalIP){
+  Serial.println("HTTP INTERFACE: Sending WiFi recon note to server.");
+
+  // Create the JSON string
+  char payload[100];
+  sprintf(payload, "{\"uid\":\"%s\",\"assignedLocalIP\":\"%s\"}", senderUID, assignedLocalIP);
+
+  // Have a look at the end product
+  Serial.print("HTTP INTERFACE: JSON payload = ");
+  Serial.println(payload);
+
+  // Create the HTTP post req
+  HTTPClient httpReq;
+  httpReq.begin("http://us-central1-iot-za.cloudfunctions.net/wifiReconNotification");  
+  httpReq.addHeader("Content-Type", "text/plain");
+
+  int resCode = httpReq.POST(payload);
+
+  // Look for the response & examine 
+   String resString = httpReq.getString();
+   Serial.println();
+   Serial.print("Receieved response to HTTP POST:  ");
+   Serial.println(resCode);
+   Serial.println(resString);
+
+   // Close connection
+   httpReq.end();
+}
+
+/*
  *                         Health check response
  *
  *  In standard operation, a nominally performing sensor will respond to 

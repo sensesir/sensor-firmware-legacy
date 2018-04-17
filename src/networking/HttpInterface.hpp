@@ -22,5 +22,6 @@
 void sendUpdateForState(DoorState newState, const char* senderUID);
 void uploadBootInfo(const char* portNum, const char* recordedUID, const char* firmwareVersion, const char* targetStaticIP, const char* assignedLocalIP);
 void sendHealthCheckUpdate(unsigned long currentMillis, const char* senderUID);
+void sendReconnectionNotification(const char* senderUID, const char* assignedLocalIP);
 
 #endif
