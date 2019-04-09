@@ -15,12 +15,29 @@
 #include <Arduino.h>
 
 // Static IP 
-// const char* staticIP = "192.168.1.105";
 
-// Methods
-void startWifiCredAcquisition(const char wifiPin);
-IPAddress connectToWifi(const char* ssid, const char* password, const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet, const char ledPin);
-IPAddress setWiFiReconnectingState();
+class GDoorWifi{
+	public:
+		void startWifiCredAcquisition(const char wifiPin);
+		IPAddress initialWiFiConnection(const char* ssid, const char* password, const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet, const char ledPin);
+		IPAddress setWiFiReconnectingState();
+
+	private:
+		// Private constants
+		int wifiLED;
+		const char* currentSsid;
+		const char* currentPassword;
+		const int* currentGatewayIPArr;
+		const int* currentSubnetIPArr;
+		int currentStaticOctet;
+
+		IPAddress connectToWifiWithStaticIP(const char* ssid, const char* password, const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet);
+		void setupStaticSensorIP(const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet);
+		IPAddress connectToWifi(const char* ssid, const char* password, const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet);
+		void toggleLED();
+};
+
+
 
 
 #endif

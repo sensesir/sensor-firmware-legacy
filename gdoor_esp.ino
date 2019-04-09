@@ -29,6 +29,7 @@ const unsigned long healthCheckInterval = 900000; // 15 mins in milliseconds (fo
 // Global vars
 GDoorUser user;
 GDoorIO doorIO;
+GDoorWifi wifiInterface;
 ESP8266WebServer server(portNumber);
 unsigned long currentMillis = 1;        //make sure they don't equate on first check
 unsigned long previousMillis = 0;
@@ -45,11 +46,11 @@ void setup() {
   bool loadSuccess = user.loadUserData();
   if (!loadSuccess){
     // Start WiFi setup mode
-    startWifiCredAcquisition(doorIO.wifiLEDPin);
+    wifiInterface.startWifiCredAcquisition(doorIO.wifiLEDPin);
   }
  
   // Connect to wifi
-  user.currentIPAddress = connectToWifi(user.ssid, user.password, user.gatewayIPArr, user.subnetMaskIpArr, user.espStaticOctet, doorIO.wifiLEDPin);                       
+  user.currentIPAddress = wifiInterface.initialWiFiConnection(user.ssid, user.password, user.gatewayIPArr, user.subnetMaskIpArr, user.espStaticOctet, doorIO.wifiLEDPin);                       
   delay(500); 
 
   // Write boot updates to DB & initial door state
@@ -109,7 +110,7 @@ void healthCheckTimeQuery(){
 }
 
 void handleWifiReconProcedure(){
-  user.currentIPAddress = setWiFiReconnectingState();
+  user.currentIPAddress = wifiInterface.setWiFiReconnectingState();
   user.createIPStrings();
   delay(500); 
 

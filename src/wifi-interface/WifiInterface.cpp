@@ -11,16 +11,9 @@
 
 #include "WifiInterface.hpp"
 
-// Private constants
-int wifiLED;
-
-// Function prototypes
-void setupStaticSensorIP(const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet);
-void toggleLED();
-
 // Implementation
 
-void startWifiCredAcquisition(const char wifiPin){
+void GDoorWifi::startWifiCredAcquisition(const char wifiPin){
 	// Wrapper method to start 
 	Serial.println("Initiating WiFi set up");
 
@@ -33,10 +26,48 @@ void startWifiCredAcquisition(const char wifiPin){
 	}
 }
 
-IPAddress connectToWifi(const char* ssid, const char* password, const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet, const char ledPin){
-	// Set the WiFi LED on
+IPAddress GDoorWifi::initialWiFiConnection(const char* ssid, const char* password, const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet, const char ledPin){
+	// Assign the local vars
+	currentSsid = ssid;
+	currentPassword = password;
+	currentGatewayIPArr = gatewayIPArr;
+	currentSubnetIPArr = subnetIPArr;
+	currentStaticOctet = staticOctet;
 	wifiLED = ledPin;
 
+	// Connect and ensure static IP is achieved
+	return connectToWifiWithStaticIP(currentSsid, currentPassword, currentGatewayIPArr, currentSubnetIPArr, currentStaticOctet);
+}
+
+IPAddress GDoorWifi::connectToWifiWithStaticIP(const char* ssid, const char* password, const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet){
+	// Wrapper method to attempt wifi connections untill the static IP works
+	IPAddress assignedLanIPAddress;
+	
+	// Attempt an initial connection
+	assignedLanIPAddress = connectToWifi(ssid, password, gatewayIPArr, subnetIPArr, staticOctet);
+	bool correctStaticIP = (assignedLanIPAddress[0] == gatewayIPArr[0]) && (assignedLanIPAddress[1] == gatewayIPArr[1]) && (assignedLanIPAddress[2] == gatewayIPArr[2]) && (assignedLanIPAddress[3] == staticOctet);
+	delay(1000);
+
+	while (!correctStaticIP) {
+		// Disconnect 
+		Serial.print("WIFI INTERFACE: Re-attempting connection, incorrectly assigned static IP => ");
+		Serial.println(assignedLanIPAddress);
+		digitalWrite(wifiLED, LOW);
+		WiFi.disconnect();
+		delay(1000);
+
+		// Attempt to connect to wifi
+		assignedLanIPAddress = connectToWifi(ssid, password, gatewayIPArr, subnetIPArr, staticOctet);
+
+		// Check the allocate static IP
+		correctStaticIP = (assignedLanIPAddress[0] == gatewayIPArr[0]) && (assignedLanIPAddress[1] == gatewayIPArr[1]) && (assignedLanIPAddress[2] == gatewayIPArr[2]) && (assignedLanIPAddress[3] == staticOctet);
+	}
+
+	Serial.println("WIFI INTERFACE: Successfully connected to correct static IP");
+	return assignedLanIPAddress;
+}
+
+IPAddress GDoorWifi::connectToWifi(const char* ssid, const char* password, const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet){
 	// Attempt to create static IP
 	WiFi.mode(WIFI_STA);
 
@@ -72,7 +103,7 @@ IPAddress connectToWifi(const char* ssid, const char* password, const int* gatew
 	return ipAddress;
 }
 
-void setupStaticSensorIP(const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet){
+void GDoorWifi::setupStaticSensorIP(const int* gatewayIPArr, const int* subnetIPArr, const int staticOctet){
 	// Create stati IP - 192.168.1.105
 	IPAddress ip(gatewayIPArr[0], gatewayIPArr[1], gatewayIPArr[2], staticOctet);					// Virtual server: 192.168.8.105
 	IPAddress subnet(subnetIPArr[0], subnetIPArr[1], subnetIPArr[2], subnetIPArr[3]);
@@ -83,7 +114,7 @@ void setupStaticSensorIP(const int* gatewayIPArr, const int* subnetIPArr, const 
 	WiFi.config(ip, gateway, subnet, gateway);
 }
 
-IPAddress setWiFiReconnectingState(){
+IPAddress GDoorWifi::setWiFiReconnectingState(){
 	// Start a ticker at interval 500ms
 	Serial.println("WIFI INTERFACE: WiFi connection dropped, attempting to reconnect");
 	while (WiFi.status() != WL_CONNECTED){
@@ -99,12 +130,21 @@ IPAddress setWiFiReconnectingState(){
 	// Print and return the assigned local IP on reconnection
 	delay(1000);
 	IPAddress ipAddress = WiFi.localIP();
+	IPAddress gatewayIP = WiFi.gatewayIP();
 	Serial.print("WIFI INTERFACE: Assigned LAN IP address = ");
 	Serial.println(ipAddress);
+
+	// Check if statuc IP is correctly assigned
+	bool correctStaticIP = (ipAddress[0] == gatewayIP[0]) && (ipAddress[1] == gatewayIP[1]) && (ipAddress[2] == gatewayIP[2]) && (ipAddress[3] == currentStaticOctet);
+	if (!correctStaticIP){
+		WiFi.disconnect();
+		ipAddress = connectToWifiWithStaticIP(currentSsid, currentPassword, currentGatewayIPArr, currentGatewayIPArr, currentStaticOctet);
+	}
+
 	return ipAddress;
 }
 
-void toggleLED(){
+void GDoorWifi::toggleLED(){
 	int state = digitalRead(wifiLED);
 	digitalWrite(wifiLED, !state);
 }
